@@ -47,6 +47,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     )
     lunar_hour = solar_time.get_lunar_hour()
     print(f"Lunar Hour: {lunar_hour}")
+    gan_zhi = solar_time.get_sixty_cycle_hour()
+    print(f"Gan-Zhi Hour: {gan_zhi}")
+    print(f"Sixty Cycle: {gan_zhi.get_year()} {gan_zhi.get_month()} {gan_zhi.get_day()} {gan_zhi.get_sixty_cycle()}")
 
 
 if __name__ == "__main__":
