@@ -56,6 +56,11 @@
   - Explanation of calculation rules and assumptions.
   - Glossary for key 奇门 concepts.
 
+## Usage
+```bash
+python main.py --moment 2024-03-20T09:15:00 --timezone Asia/Shanghai
+```
+
 ## Testing Strategy
 - Unit tests for deterministic functions (stems/branches, palace rotations).
 - Property-based tests for cyclical mappings (hypothesis).
