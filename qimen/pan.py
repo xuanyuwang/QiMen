@@ -19,11 +19,21 @@ class Pan:
     Yuan: info = field(default_factory=lambda: info(label="元", value=None))
     XunShou: info = field(default_factory=lambda: info(label="旬首", value=None))
     JuShu: info = field(default_factory=lambda: info(label="局数", value=None))
+    DiPan: info = field(default_factory=lambda: info(label="地盘", value=dict()))
+    TianPan: info = field(default_factory=lambda: info(label="天盘", value=dict()))
+    JiuXing: info = field(default_factory=lambda: info(label="九星", value=dict()))
+    BaShen: info = field(default_factory=lambda: info(label="八神", value=dict()))
+    ZhiShiMen: info = field(default_factory=lambda: info(label="值使门", value=None))
 
     def __str__(self) -> str:
         lines = []
         for field_name in self.__dataclass_fields__:
             field_value = getattr(self, field_name)
             if isinstance(field_value, info):
-                lines.append(f"{field_value.label}: {field_value.value}")
+                # Special handling for dict values (like DiPan with Gong objects)
+                if isinstance(field_value.value, dict):
+                    dict_str = {k: str(v) for k, v in field_value.value.items()}
+                    lines.append(f"{field_value.label}: {dict_str}")
+                else:
+                    lines.append(f"{field_value.label}: {str(field_value.value)}")
         return "\n".join(lines)
