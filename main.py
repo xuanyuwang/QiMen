@@ -11,6 +11,7 @@ from qimen.jia_zi_graph import LiuShiJiaZi
 from qimen.pan import Pan
 from qimen.gong import NumToGong, NameToGong
 from qimen.xing import ArrangeJiuXing
+from qimen.shen import ArrangeBaShen
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -124,6 +125,13 @@ def arrange_jiu_xing(pan: Pan) -> None:
     for xing, gong_name in arrange_jiu_xing.items():
         pan.JiuXing.value[xing] = NameToGong[gong_name]
 
+def arrange_ba_shen(pan: Pan) -> None:
+    first_bashen = next(iter(pan.BaShen.value))
+    first_gong = pan.BaShen.value[first_bashen].name
+    arrange_ba_shen = ArrangeBaShen(first_bashen, first_gong, pan.YinYang.value)
+    for bashen, gong_name in arrange_ba_shen.items():
+        pan.BaShen.value[bashen] = NameToGong[gong_name]
+
 
 def main(argv: Sequence[str] | None = None) -> None:
     parser = build_parser()
@@ -162,6 +170,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     get_zhi_fu(pan)
     get_zhi_shi_men(pan)
     arrange_jiu_xing(pan)
+    arrange_ba_shen(pan)
     print(pan)
 
 
