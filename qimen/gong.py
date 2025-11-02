@@ -96,3 +96,6 @@ NumToGong = {
     8: GenGong,
     9: LiGong,
 }
+
+# find Gong by name
+NameToGong = {gong.name: gong for gong in NumToGong.values()}

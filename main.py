@@ -4,13 +4,13 @@ import argparse
 from datetime import datetime
 from typing import Sequence
 from tyme4py.solar import SolarTime
-from tyme4py.lunar import LunarHour
 
 from qimen import parse_observation_datetime
-from qimen.jie_qi_graph import JieQiYinYang, JieQiGraph, GetJieQiYinYang
+from qimen.jie_qi_graph import JieQiGraph, GetJieQiYinYang
 from qimen.jia_zi_graph import LiuShiJiaZi
 from qimen.pan import Pan
-from qimen.gong import NumToGong
+from qimen.gong import NumToGong, NameToGong
+from qimen.xing import ArrangeJiuXing
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -102,10 +102,7 @@ def get_zhi_fu(pan: Pan) -> None:
     gong = pan.DiPan.value[di_pan]
     xing = gong.ZhuDiXing
     
-    print(f"时柱: {shi_zhu}, 地盘: {di_pan}, 宫位: {gong}, 星: {xing}")
-    
     shi_zhu_gong = pan.DiPan.value[shi_zhu[0]]
-    print(f"时柱宫 {shi_zhu_gong}")
     
     pan.TianPan.value[di_pan] = shi_zhu_gong
     pan.JiuXing.value[xing] = shi_zhu_gong
@@ -114,12 +111,18 @@ def get_zhi_fu(pan: Pan) -> None:
 def get_zhi_shi_men(pan: Pan) -> None:
     shi_zhu = pan.ShiZhu.value
     di_pan = None
-    shi_zhu_gong = pan.DiPan.value[shi_zhu[0]]
     for key in LiuShiJiaZi:
         if shi_zhu in LiuShiJiaZi[key].get("上元", []) or shi_zhu in LiuShiJiaZi[key].get("中元", []) or shi_zhu in LiuShiJiaZi[key].get("下元", []):
             di_pan = LiuShiJiaZi[key]["遁"]
     gong = pan.DiPan.value[di_pan]
     pan.ZhiShiMen.value = gong.Men
+
+def arrange_jiu_xing(pan: Pan) -> None:
+    first_xing = next(iter(pan.JiuXing.value))
+    first_gong = pan.JiuXing.value[first_xing].name
+    arrange_jiu_xing = ArrangeJiuXing(first_xing, first_gong)
+    for xing, gong_name in arrange_jiu_xing.items():
+        pan.JiuXing.value[xing] = NameToGong[gong_name]
 
 
 def main(argv: Sequence[str] | None = None) -> None:
@@ -158,6 +161,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     get_xun_shou_kong_wang(pan)
     get_zhi_fu(pan)
     get_zhi_shi_men(pan)
+    arrange_jiu_xing(pan)
     print(pan)
 
 
