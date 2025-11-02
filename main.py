@@ -29,9 +29,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     return parser
 
-def get_yin_yang_ju_shu(solar_time: SolarTime, pan: Pan) -> None:
+
+def get_yin_yang_ju_shu(pan: Pan) -> None:
     ju_list = JieQiGraph[pan.JieQi.value]
-    
+
     ri_zhu = pan.RiZhu.value
     yuan = None
     for key in LiuShiJiaZi:
@@ -45,7 +46,7 @@ def get_yin_yang_ju_shu(solar_time: SolarTime, pan: Pan) -> None:
             yuan = "下元"
             break
     pan.Yuan.value = yuan
-    
+
     ju = None
     if yuan == "上元":
         ju = ju_list[0]
@@ -54,8 +55,9 @@ def get_yin_yang_ju_shu(solar_time: SolarTime, pan: Pan) -> None:
     elif yuan == "下元":
         ju = ju_list[2]
     pan.JuShu.value = ju
-    
-def di_pan(pan: Pan) -> None:
+
+
+def arrange_di_pan(pan: Pan) -> None:
     start_num: int = pan.JuShu.value - 1
     op = (lambda x: x + 1) if pan.YinYang.value == "阳" else (lambda x: x - 1)
     generated_nums = [start_num]
@@ -73,7 +75,8 @@ def di_pan(pan: Pan) -> None:
     pan.DiPan.value["丁"] = NumToGong[generated_nums[6]]
     pan.DiPan.value["丙"] = NumToGong[generated_nums[7]]
     pan.DiPan.value["乙"] = NumToGong[generated_nums[8]]
-    
+
+
 def get_xun_shou_kong_wang(pan: Pan) -> None:
     shi_zhu = pan.ShiZhu.value
     xun_shou = None
@@ -93,43 +96,46 @@ def get_xun_shou_kong_wang(pan: Pan) -> None:
             break
     pan.XunShou.value = xun_shou
     pan.KongWang.value = kong_wang
-    
+
+
 def get_zhi_fu(pan: Pan) -> None:
-    shi_zhu = pan.ShiZhu.value
-    di_pan = None
-    for key in LiuShiJiaZi:
-        if shi_zhu in LiuShiJiaZi[key].get("上元", []) or shi_zhu in LiuShiJiaZi[key].get("中元", []) or shi_zhu in LiuShiJiaZi[key].get("下元", []):
-            di_pan = LiuShiJiaZi[key]["遁"]
-    gong = pan.DiPan.value[di_pan]
+    xun_shou = pan.XunShou.value
+    dun = LiuShiJiaZi[xun_shou]["遁"]
+    gong = pan.DiPan.value[dun]
     xing = gong.ZhuDiXing
-    
-    shi_zhu_gong = pan.DiPan.value[shi_zhu[0]]
-    
-    pan.TianPan.value[di_pan] = shi_zhu_gong
-    pan.JiuXing.value[xing] = shi_zhu_gong
-    pan.BaShen.value["值符"] = shi_zhu_gong
-    
+
+    pan.TianPan.value[dun] = gong
+    pan.JiuXing.value[xing] = gong
+    pan.BaShen.value["值符"] = gong
+
+
 def get_zhi_shi_men(pan: Pan) -> None:
     shi_zhu = pan.ShiZhu.value
     di_pan = None
     for key in LiuShiJiaZi:
-        if shi_zhu in LiuShiJiaZi[key].get("上元", []) or shi_zhu in LiuShiJiaZi[key].get("中元", []) or shi_zhu in LiuShiJiaZi[key].get("下元", []):
+        if (
+            shi_zhu in LiuShiJiaZi[key].get("上元", [])
+            or shi_zhu in LiuShiJiaZi[key].get("中元", [])
+            or shi_zhu in LiuShiJiaZi[key].get("下元", [])
+        ):
             di_pan = LiuShiJiaZi[key]["遁"]
     gong = pan.DiPan.value[di_pan]
     pan.ZhiShiMen.value = gong.Men
 
+
 def arrange_jiu_xing(pan: Pan) -> None:
     first_xing = next(iter(pan.JiuXing.value))
     first_gong = pan.JiuXing.value[first_xing].name
-    arrange_jiu_xing = ArrangeJiuXing(first_xing, first_gong)
-    for xing, gong_name in arrange_jiu_xing.items():
+    arranged_jiu_xing = ArrangeJiuXing(first_xing, first_gong)
+    for xing, gong_name in arranged_jiu_xing.items():
         pan.JiuXing.value[xing] = NameToGong[gong_name]
+
 
 def arrange_ba_shen(pan: Pan) -> None:
     first_bashen = next(iter(pan.BaShen.value))
     first_gong = pan.BaShen.value[first_bashen].name
-    arrange_ba_shen = ArrangeBaShen(first_bashen, first_gong, pan.YinYang.value)
-    for bashen, gong_name in arrange_ba_shen.items():
+    arranged_ba_shen = ArrangeBaShen(first_bashen, first_gong, pan.YinYang.value)
+    for bashen, gong_name in arranged_ba_shen.items():
         pan.BaShen.value[bashen] = NameToGong[gong_name]
 
 
@@ -144,7 +150,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         f"{observation.year:04d}-{observation.month:02d}-{observation.day:02d}"
         f"T{observation.hour:02d}:{observation.minute:02d}"
     )
-    
+
     solar_time = SolarTime(
         year=observation.year,
         month=observation.month,
@@ -154,7 +160,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         second=0,
     )
     print(f"时辰: {solar_time.get_lunar_hour()}")
-    
+
     pan = Pan()
     pan.JieQi.value = solar_time.get_term().get_name()
     gan_zhi = solar_time.get_sixty_cycle_hour()
@@ -164,8 +170,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     pan.ShiZhu.value = gan_zhi.get_sixty_cycle().get_name()
     pan.YinYang.value = GetJieQiYinYang(pan.JieQi.value)
 
-    get_yin_yang_ju_shu(solar_time, pan)
-    di_pan(pan)
+    get_yin_yang_ju_shu(pan)
+    arrange_di_pan(pan)
     get_xun_shou_kong_wang(pan)
     get_zhi_fu(pan)
     get_zhi_shi_men(pan)

@@ -12,6 +12,14 @@
             "program": "main.py",
             "console": "integratedTerminal",
             "args": "--moment 2008-11-04T12:30:00"
+        },
+        {
+            "name": "test case 2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "args": "--moment 1998-09-26T11:20:00"
         }
     ]
 }
