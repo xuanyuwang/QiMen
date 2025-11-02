@@ -99,3 +99,4 @@ NumToGong = {
 
 # find Gong by name
 NameToGong = {gong.name: gong for gong in NumToGong.values()}
+ZhuDiXingToGong = {gong.ZhuDiXing: gong for gong in NumToGong.values()}

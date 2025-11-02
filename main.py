@@ -9,7 +9,7 @@ from qimen import parse_observation_datetime
 from qimen.jie_qi_graph import JieQiGraph, GetJieQiYinYang
 from qimen.jia_zi_graph import LiuShiJiaZi
 from qimen.pan import Pan
-from qimen.gong import NumToGong, NameToGong
+from qimen.gong import NumToGong, NameToGong, ZhuDiXingToGong
 from qimen.xing import ArrangeJiuXing
 from qimen.shen import ArrangeBaShen
 
@@ -104,9 +104,11 @@ def get_zhi_fu(pan: Pan) -> None:
     gong = pan.DiPan.value[dun]
     xing = gong.ZhuDiXing
 
-    pan.TianPan.value[dun] = gong
-    pan.JiuXing.value[xing] = gong
-    pan.BaShen.value["值符"] = gong
+    shi_zhu = pan.ShiZhu.value
+    target_gong = pan.DiPan.value[shi_zhu[0]]
+    pan.TianPan.value[dun] = target_gong
+    pan.JiuXing.value[xing] = target_gong
+    pan.BaShen.value["值符"] = target_gong
 
 
 def get_zhi_shi_men(pan: Pan) -> None:
@@ -137,6 +139,14 @@ def arrange_ba_shen(pan: Pan) -> None:
     arranged_ba_shen = ArrangeBaShen(first_bashen, first_gong, pan.YinYang.value)
     for bashen, gong_name in arranged_ba_shen.items():
         pan.BaShen.value[bashen] = NameToGong[gong_name]
+
+def arrange_tian_pan(pan: Pan) -> None:
+    for xing, gong in pan.JiuXing.value.items():
+        gong = NameToGong[gong.name]
+        original_gong_of_xing = ZhuDiXingToGong[xing].name
+        di_pan_gong_to_tian_gan = {gong.name: tian_gan for tian_gan, gong in pan.DiPan.value.items()}
+        tian_gan = di_pan_gong_to_tian_gan[original_gong_of_xing]
+        pan.TianPan.value[tian_gan] = gong
 
 
 def main(argv: Sequence[str] | None = None) -> None:
@@ -177,6 +187,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     get_zhi_shi_men(pan)
     arrange_jiu_xing(pan)
     arrange_ba_shen(pan)
+    arrange_tian_pan(pan)
     print(pan)
 
 
