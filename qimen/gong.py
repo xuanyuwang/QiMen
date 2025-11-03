@@ -97,6 +97,34 @@ NumToGong = {
     9: LiGong,
 }
 
+ClockwiseGongOrder = [
+    QianGong,
+    KanGong,
+    GenGong,
+    ZhenGong,
+    XunGong,
+    LiGong,
+    KunGong,
+    DuiGong,
+]
+
+AntiClockwiseGongOrder = [
+    DuiGong,
+    KunGong,
+    LiGong,
+    XunGong,
+    ZhenGong,
+    GenGong,
+    KanGong,
+    QianGong,
+]
+
+def NextGong(current_gong: Gong, order: list[Gong]) -> Gong:
+    index = order.index(current_gong)
+    next_index = (index + 1) % len(order)
+    return order[next_index]
+
 # find Gong by name
 NameToGong = {gong.name: gong for gong in NumToGong.values()}
 ZhuDiXingToGong = {gong.ZhuDiXing: gong for gong in NumToGong.values()}
+NumToGong = {gong.num: gong for gong in NumToGong.values()}

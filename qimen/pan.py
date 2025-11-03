@@ -24,6 +24,7 @@ class Pan:
     JiuXing: info = field(default_factory=lambda: info(label="九星", value=dict()))
     BaShen: info = field(default_factory=lambda: info(label="八神", value=dict()))
     ZhiShiMen: info = field(default_factory=lambda: info(label="值使门", value=None))
+    BaMen: info = field(default_factory=lambda: info(label="八门", value=dict()))
 
     def __str__(self) -> str:
         lines = []
