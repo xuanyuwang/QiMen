@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any
+from .zhu import Zhu
 
 @dataclass
 class info:
@@ -10,14 +11,14 @@ class info:
 @dataclass
 class Pan:
     JieQi: info = field(default_factory=lambda: info(label="节气", value=None))
-    NianZhu: info = field(default_factory=lambda: info(label="年柱", value=None))
-    YueZhu: info = field(default_factory=lambda: info(label="月柱", value=None))
-    RiZhu: info = field(default_factory=lambda: info(label="日柱", value=None))
-    ShiZhu: info = field(default_factory=lambda: info(label="时柱", value=None))
+    NianZhu: info = field(default_factory=lambda: info(label="年柱", value=Zhu(gan="", zhi="")))
+    YueZhu: info = field(default_factory=lambda: info(label="月柱", value=Zhu(gan="", zhi="")))
+    RiZhu: info = field(default_factory=lambda: info(label="日柱", value=Zhu(gan="", zhi="")))
+    ShiZhu: info = field(default_factory=lambda: info(label="时柱", value=Zhu(gan="", zhi="")))
     YinYang: info = field(default_factory=lambda: info(label="阴阳", value=None))
     KongWang: info = field(default_factory=lambda: info(label="空亡", value=None))
     Yuan: info = field(default_factory=lambda: info(label="元", value=None))
-    XunShou: info = field(default_factory=lambda: info(label="旬首", value=None))
+    XunShou: info = field(default_factory=lambda: info(label="旬首", value=Zhu(gan="甲", zhi="")))
     JuShu: info = field(default_factory=lambda: info(label="局数", value=None))
     DiPan: info = field(default_factory=lambda: info(label="地盘", value=dict()))
     TianPan: info = field(default_factory=lambda: info(label="天盘", value=dict()))

@@ -12,6 +12,7 @@ from qimen.pan import Pan
 from qimen.gong import NumToGong, NameToGong, ZhuDiXingToGong, NextGong, ClockwiseGongOrder
 from qimen.xing import ArrangeJiuXing
 from qimen.shen import ArrangeBaShen
+from qimen.zhu import Zhu
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -33,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
 def get_yin_yang_ju_shu(pan: Pan) -> None:
     ju_list = JieQiGraph[pan.JieQi.value]
 
-    ri_zhu = pan.RiZhu.value
+    ri_zhu = str(pan.RiZhu.value)
     yuan = None
     for key in LiuShiJiaZi:
         if ri_zhu in LiuShiJiaZi[key].get("上元", []):
@@ -78,7 +79,7 @@ def arrange_di_pan(pan: Pan) -> None:
 
 
 def get_xun_shou_kong_wang(pan: Pan) -> None:
-    shi_zhu = pan.ShiZhu.value
+    shi_zhu = str(pan.ShiZhu.value)
     xun_shou = None
     kong_wang = None
     for key in LiuShiJiaZi:
@@ -94,25 +95,24 @@ def get_xun_shou_kong_wang(pan: Pan) -> None:
             xun_shou = key
             kong_wang = LiuShiJiaZi[key].get("空亡", [])
             break
-    pan.XunShou.value = xun_shou
+    pan.XunShou.value = Zhu(gan=xun_shou[0], zhi=xun_shou[1])
     pan.KongWang.value = kong_wang
 
 
 def get_zhi_fu(pan: Pan) -> None:
-    xun_shou = pan.XunShou.value
+    xun_shou = str(pan.XunShou.value)
     dun = LiuShiJiaZi[xun_shou]["遁"]
     gong = pan.DiPan.value[dun]
     xing = gong.ZhuDiXing
 
-    shi_zhu = pan.ShiZhu.value
-    target_gong = pan.DiPan.value[shi_zhu[0]]
+    target_gong = pan.DiPan.value[pan.ShiZhu.value.gan]
     pan.TianPan.value[dun] = target_gong
     pan.JiuXing.value[xing] = target_gong
     pan.BaShen.value["值符"] = target_gong
 
 
 def get_zhi_shi_men(pan: Pan) -> None:
-    shi_zhu = pan.ShiZhu.value
+    shi_zhu = str(pan.ShiZhu.value)
     di_pan = None
     for key in LiuShiJiaZi:
         if (
@@ -149,7 +149,7 @@ def arrange_tian_pan(pan: Pan) -> None:
         pan.TianPan.value[tian_gan] = gong
 
 def arrange_ba_men(pan: Pan) -> None:
-    dun = LiuShiJiaZi[pan.XunShou.value]["遁"]
+    dun = LiuShiJiaZi[str(pan.XunShou.value)]["遁"]
     dun_gong = pan.DiPan.value[dun]
 
     op = (lambda x: x + 1) if pan.YinYang.value == "阳" else (lambda x: x - 1)
@@ -157,14 +157,14 @@ def arrange_ba_men(pan: Pan) -> None:
     next_di_zhi = lambda x: di_zhi_list[(di_zhi_list.index(x) + 1) % 12]
     next_gong_num = lambda current_gong_num: (op(current_gong_num - 1) % 8) + 1
     start_gong_num = dun_gong.num
-    start_di_zhi = pan.XunShou.value[1]
+    start_di_zhi = pan.XunShou.value.zhi
     di_zhi_map = {start_di_zhi: start_gong_num}
     for i in range(len(di_zhi_list)):
         start_di_zhi = next_di_zhi(start_di_zhi)
         start_gong_num = next_gong_num(start_gong_num)
         di_zhi_map[start_di_zhi] = start_gong_num
     
-    target_di_zhi = pan.ShiZhu.value[1]
+    target_di_zhi = pan.ShiZhu.value.zhi
     
     ba_men = ["开门", "休门", "生门", "伤门", "杜门", "景门", "死门", "惊门"]
     next_men = lambda current_men: ba_men[(ba_men.index(current_men) + 1) % len(ba_men)]
@@ -234,10 +234,22 @@ def main(argv: Sequence[str] | None = None) -> None:
     pan = Pan()
     pan.JieQi.value = solar_time.get_term().get_name()
     gan_zhi = solar_time.get_sixty_cycle_hour()
-    pan.NianZhu.value = gan_zhi.get_year().get_name()
-    pan.YueZhu.value = gan_zhi.get_month().get_name()
-    pan.RiZhu.value = gan_zhi.get_day().get_name()
-    pan.ShiZhu.value = gan_zhi.get_sixty_cycle().get_name()
+    pan.NianZhu.value = Zhu(
+        gan=gan_zhi.get_year().get_name()[0],
+        zhi=gan_zhi.get_year().get_name()[1],
+    )
+    pan.YueZhu.value = Zhu(
+        gan=gan_zhi.get_month().get_name()[0],
+        zhi=gan_zhi.get_month().get_name()[1],
+    )
+    pan.RiZhu.value = Zhu(
+        gan=gan_zhi.get_day().get_name()[0],
+        zhi=gan_zhi.get_day().get_name()[1],
+    )
+    pan.ShiZhu.value = Zhu(
+        gan=gan_zhi.get_sixty_cycle().get_name()[0],
+        zhi=gan_zhi.get_sixty_cycle().get_name()[1],
+    )
     pan.YinYang.value = GetJieQiYinYang(pan.JieQi.value)
 
     get_yin_yang_ju_shu(pan)
@@ -250,8 +262,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     arrange_tian_pan(pan)
     arrange_ba_men(pan)
     ji_gong(pan)
-    print(pan)
     group_by_gong(pan)
+    print(pan)
 
 
 if __name__ == "__main__":
