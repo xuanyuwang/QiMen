@@ -105,7 +105,7 @@ def get_zhi_fu(pan: Pan) -> None:
     gong = pan.DiPan.value[dun]
     xing = gong.ZhuDiXing
 
-    target_gong = pan.DiPan.value[pan.ShiZhu.value.gan]
+    target_gong = pan.DiPan.value[pan.ShiZhu.value.get_gan()]
     pan.TianPan.value[dun] = target_gong
     pan.JiuXing.value[xing] = target_gong
     pan.BaShen.value["值符"] = target_gong
@@ -140,13 +140,17 @@ def arrange_ba_shen(pan: Pan) -> None:
     for bashen, gong_name in arranged_ba_shen.items():
         pan.BaShen.value[bashen] = NameToGong[gong_name]
 
+
 def arrange_tian_pan(pan: Pan) -> None:
     for xing, gong in pan.JiuXing.value.items():
         gong = NameToGong[gong.name]
         original_gong_of_xing = ZhuDiXingToGong[xing].name
-        di_pan_gong_to_tian_gan = {gong.name: tian_gan for tian_gan, gong in pan.DiPan.value.items()}
+        di_pan_gong_to_tian_gan = {
+            gong.name: tian_gan for tian_gan, gong in pan.DiPan.value.items()
+        }
         tian_gan = di_pan_gong_to_tian_gan[original_gong_of_xing]
         pan.TianPan.value[tian_gan] = gong
+
 
 def arrange_ba_men(pan: Pan) -> None:
     dun = LiuShiJiaZi[str(pan.XunShou.value)]["遁"]
@@ -159,22 +163,25 @@ def arrange_ba_men(pan: Pan) -> None:
     start_gong_num = dun_gong.num
     start_di_zhi = pan.XunShou.value.zhi
     di_zhi_map = {start_di_zhi: start_gong_num}
-    for i in range(len(di_zhi_list)):
+    target_di_zhi = pan.ShiZhu.value.zhi
+    for _ in range(len(di_zhi_list)):
+        if target_di_zhi in di_zhi_map:
+            break
         start_di_zhi = next_di_zhi(start_di_zhi)
         start_gong_num = next_gong_num(start_gong_num)
         di_zhi_map[start_di_zhi] = start_gong_num
-    
-    target_di_zhi = pan.ShiZhu.value.zhi
-    
+
     ba_men = ["开门", "休门", "生门", "伤门", "杜门", "景门", "死门", "惊门"]
-    next_men = lambda current_men: ba_men[(ba_men.index(current_men) + 1) % len(ba_men)]
+    def next_men(current_men):
+        return ba_men[(ba_men.index(current_men) + 1) % len(ba_men)]
     start_men = pan.ZhiShiMen.value
     start_gong = NumToGong[di_zhi_map[target_di_zhi]]
     pan.BaMen.value = {start_men: start_gong}
-    for i in range(len(ba_men)):
+    for _ in range(len(ba_men)):
         start_men = next_men(start_men)
         start_gong = NextGong(start_gong, ClockwiseGongOrder)
         pan.BaMen.value[start_men] = start_gong
+
 
 def ji_gong(pan: Pan) -> None:
     di_pan_tian_gan = None
@@ -183,8 +190,8 @@ def ji_gong(pan: Pan) -> None:
             di_pan_tian_gan = di_pan
             continue
     pan.DiPan.value[di_pan_tian_gan] = NumToGong[2]
-    
-        
+
+
 def group_by_gong(pan: Pan):
     gong_map = {}
     for gong in NumToGong.values():
@@ -203,11 +210,12 @@ def group_by_gong(pan: Pan):
     for xing, gong in pan.JiuXing.value.items():
         gong_map[gong.name]["星"].append(xing)
     for shen, gong in pan.BaShen.value.items():
-        gong_map[gong.name]["神"] = shen 
+        gong_map[gong.name]["神"] = shen
     for men, gong in pan.BaMen.value.items():
         gong_map[gong.name]["门"] = men
     for gong_name, details in gong_map.items():
         print(f"{gong_name}: {details}")
+
 
 def main(argv: Sequence[str] | None = None) -> None:
     parser = build_parser()
