@@ -1,103 +1,179 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
+
+
 @dataclass
 class Gong:
-    num: int
-    name: str
+    BaGua: str
+    Number: int
+    Name: str
     WuXing: str
-    ZhuDiXing: str
     YinYang: str
-    Men: str
+    ZhuDiXing: str
+    ZhuDiMen: str
+    TianGan: list[str]
+    DiZhi: list[str]
+    FeiXing: list[str]
+    FeiShen: str
+    FeiMen: str
 
     def __str__(self) -> str:
-        return f"{self.name}"
+        return self.Name
 
 
 KanGong = Gong(
-    num=1,
-    name="坎一宫",
+    BaGua="坎",
+    Number=1,
+    Name="坎一宫",
     WuXing="水",
+    YinYang="阳",
     ZhuDiXing="天蓬",
-    YinYang="阳",
-    Men="休门",
+    ZhuDiMen="休门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 KunGong = Gong(
-    num=2,
-    name="坤二宫",
+    BaGua="坤",
+    Number=2,
+    Name="坤二宫",
     WuXing="土",
+    YinYang="阴",
     ZhuDiXing="天芮",
-    YinYang="阴",
-    Men="死门",
+    ZhuDiMen="死门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 ZhenGong = Gong(
-    num=3,
-    name="震三宫",
+    BaGua="震",
+    Number=3,
+    Name="震三宫",
     WuXing="木",
+    YinYang="阳",
     ZhuDiXing="天冲",
-    YinYang="阳",
-    Men="伤门",
+    ZhuDiMen="伤门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 XunGong = Gong(
-    num=4,
-    name="巽四宫",
+    BaGua="巽",
+    Number=4,
+    Name="巽四宫",
     WuXing="木",
+    YinYang="阳",
     ZhuDiXing="天辅",
-    YinYang="阳",
-    Men="杜门",
+    ZhuDiMen="杜门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 ZhongGong = Gong(
-    num=5,
-    name="中五宫",
+    BaGua="中",
+    Number=5,
+    Name="中五宫",
     WuXing="土",
+    YinYang="阳",
     ZhuDiXing="天禽",
-    YinYang="阳",
-    Men="",
+    ZhuDiMen="",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 QianGong = Gong(
-    num=6,
-    name="乾六宫",
+    BaGua="乾",
+    Number=6,
+    Name="乾六宫",
     WuXing="金",
+    YinYang="阳",
     ZhuDiXing="天心",
-    YinYang="阳",
-    Men="开门",
+    ZhuDiMen="开门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 DuiGong = Gong(
-    num=7,
-    name="兑七宫",
+    BaGua="兑",
+    Number=7,
+    Name="兑七宫",
     WuXing="金",
+    YinYang="阴",
     ZhuDiXing="天柱",
-    YinYang="阴",
-    Men="惊门",
+    ZhuDiMen="惊门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 GenGong = Gong(
-    num=8,
-    name="艮八宫",
+    BaGua="艮",
+    Number=8,
+    Name="艮八宫",
     WuXing="土",
-    ZhuDiXing="天任",
     YinYang="阳",
-    Men="生门",
+    ZhuDiXing="天任",
+    ZhuDiMen="生门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
+
 LiGong = Gong(
-    num=9,
-    name="离九宫",
+    BaGua="离",
+    Number=9,
+    Name="离九宫",
     WuXing="火",
-    ZhuDiXing="天英",
     YinYang="阴",
-    Men="景门",
+    ZhuDiXing="天英",
+    ZhuDiMen="景门",
+    TianGan=[],
+    DiZhi=[],
+    FeiXing=[],
+    FeiShen="",
+    FeiMen="",
 )
 
-NumToGong = {
-    1: KanGong,
-    2: KunGong,
-    3: ZhenGong,
-    4: XunGong,
-    5: ZhongGong,
-    6: QianGong,
-    7: DuiGong,
-    8: GenGong,
-    9: LiGong,
-}
+GONGS: tuple[Gong, ...] = (
+    KanGong,
+    KunGong,
+    ZhenGong,
+    XunGong,
+    ZhongGong,
+    QianGong,
+    DuiGong,
+    GenGong,
+    LiGong,
+)
 
-ClockwiseGongOrder = [
+NumToGong = {gong.Number: gong for gong in GONGS}
+NameToGong = {gong.Name: gong for gong in GONGS}
+ZhuDiXingToGong = {gong.ZhuDiXing: gong for gong in GONGS}
+
+ClockwiseGongOrder: list[Gong] = [
     QianGong,
     KanGong,
     GenGong,
@@ -108,7 +184,7 @@ ClockwiseGongOrder = [
     DuiGong,
 ]
 
-AntiClockwiseGongOrder = [
+AntiClockwiseGongOrder: list[Gong] = [
     DuiGong,
     KunGong,
     LiGong,
@@ -118,13 +194,9 @@ AntiClockwiseGongOrder = [
     KanGong,
     QianGong,
 ]
+
 
 def NextGong(current_gong: Gong, order: list[Gong]) -> Gong:
     index = order.index(current_gong)
     next_index = (index + 1) % len(order)
     return order[next_index]
-
-# find Gong by name
-NameToGong = {gong.name: gong for gong in NumToGong.values()}
-ZhuDiXingToGong = {gong.ZhuDiXing: gong for gong in NumToGong.values()}
-NumToGong = {gong.num: gong for gong in NumToGong.values()}

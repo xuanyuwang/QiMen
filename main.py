@@ -13,6 +13,7 @@ from qimen.gong import NumToGong, NameToGong, ZhuDiXingToGong, NextGong, Clockwi
 from qimen.xing import ArrangeJiuXing
 from qimen.shen import ArrangeBaShen
 from qimen.zhu import Zhu
+import pandas as pd
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -107,7 +108,6 @@ def get_zhi_fu(pan: Pan) -> None:
 
     target_gong = pan.DiPan.value[pan.ShiZhu.value.get_gan()]
     pan.TianPan.value[dun] = target_gong
-    pan.JiuXing.value[xing] = target_gong
     pan.BaShen.value["值符"] = target_gong
 
 
@@ -122,12 +122,12 @@ def get_zhi_shi_men(pan: Pan) -> None:
         ):
             di_pan = LiuShiJiaZi[key]["遁"]
     gong = pan.DiPan.value[di_pan]
-    pan.ZhiShiMen.value = gong.Men
+    pan.ZhiShiMen.value = gong.ZhuDiMen
 
 
 def arrange_jiu_xing(pan: Pan) -> None:
     first_xing = next(iter(pan.JiuXing.value))
-    first_gong = pan.JiuXing.value[first_xing].name
+    first_gong = pan.JiuXing.value[first_xing].Name
     arranged_jiu_xing = ArrangeJiuXing(first_xing, first_gong)
     for xing, gong_name in arranged_jiu_xing.items():
         pan.JiuXing.value[xing] = NameToGong[gong_name]
@@ -135,7 +135,7 @@ def arrange_jiu_xing(pan: Pan) -> None:
 
 def arrange_ba_shen(pan: Pan) -> None:
     first_bashen = next(iter(pan.BaShen.value))
-    first_gong = pan.BaShen.value[first_bashen].name
+    first_gong = pan.BaShen.value[first_bashen].Name
     arranged_ba_shen = ArrangeBaShen(first_bashen, first_gong, pan.YinYang.value)
     for bashen, gong_name in arranged_ba_shen.items():
         pan.BaShen.value[bashen] = NameToGong[gong_name]
@@ -143,10 +143,10 @@ def arrange_ba_shen(pan: Pan) -> None:
 
 def arrange_tian_pan(pan: Pan) -> None:
     for xing, gong in pan.JiuXing.value.items():
-        gong = NameToGong[gong.name]
-        original_gong_of_xing = ZhuDiXingToGong[xing].name
+        gong = NameToGong[gong.Name]
+        original_gong_of_xing = ZhuDiXingToGong[xing].Name
         di_pan_gong_to_tian_gan = {
-            gong.name: tian_gan for tian_gan, gong in pan.DiPan.value.items()
+            gong.Name: tian_gan for tian_gan, gong in pan.DiPan.value.items()
         }
         tian_gan = di_pan_gong_to_tian_gan[original_gong_of_xing]
         pan.TianPan.value[tian_gan] = gong
@@ -160,7 +160,7 @@ def arrange_ba_men(pan: Pan) -> None:
     di_zhi_list = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
     next_di_zhi = lambda x: di_zhi_list[(di_zhi_list.index(x) + 1) % 12]
     next_gong_num = lambda current_gong_num: (op(current_gong_num - 1) % 8) + 1
-    start_gong_num = dun_gong.num
+    start_gong_num = dun_gong.Number
     start_di_zhi = pan.XunShou.value.zhi
     di_zhi_map = {start_di_zhi: start_gong_num}
     target_di_zhi = pan.ShiZhu.value.zhi
@@ -186,7 +186,7 @@ def arrange_ba_men(pan: Pan) -> None:
 def ji_gong(pan: Pan) -> None:
     di_pan_tian_gan = None
     for di_pan, gong in pan.DiPan.value.items():
-        if gong.name == "中五宫":
+        if gong.Name == "中五宫":
             di_pan_tian_gan = di_pan
             continue
     pan.DiPan.value[di_pan_tian_gan] = NumToGong[2]
@@ -195,8 +195,8 @@ def ji_gong(pan: Pan) -> None:
 def group_by_gong(pan: Pan):
     gong_map = {}
     for gong in NumToGong.values():
-        gong_map[gong.name] = {
-            "宫位": gong.name,
+        gong_map[gong.Name] = {
+            "宫位": gong.Name,
             "天干": [],
             "地支": [],
             "星": [],
@@ -204,18 +204,26 @@ def group_by_gong(pan: Pan):
             "门": None,
         }
     for tian_gan, gong in pan.TianPan.value.items():
-        gong_map[gong.name]["天干"].append(tian_gan)
+        gong_map[gong.Name]["天干"].append(tian_gan)
     for di_zhi, gong in pan.DiPan.value.items():
-        gong_map[gong.name]["地支"].append(di_zhi)
+        gong_map[gong.Name]["地支"].append(di_zhi)
     for xing, gong in pan.JiuXing.value.items():
-        gong_map[gong.name]["星"].append(xing)
+        gong_map[gong.Name]["星"].append(xing)
     for shen, gong in pan.BaShen.value.items():
-        gong_map[gong.name]["神"] = shen
+        gong_map[gong.Name]["神"] = shen
     for men, gong in pan.BaMen.value.items():
-        gong_map[gong.name]["门"] = men
-    for gong_name, details in gong_map.items():
-        print(f"{gong_name}: {details}")
-
+        gong_map[gong.Name]["门"] = men
+    # convert gong_map to a dataframe and then print as markdown
+    # convert gong_map to DataFrame
+    df = pd.DataFrame(list(gong_map.values()))
+    # stringify list-like columns for nicer markdown
+    for col in ("天干", "地支", "星"):
+        df[col] = df[col].apply(lambda v: ", ".join(v) if isinstance(v, (list, tuple)) else ("" if v is None else str(v)))
+    # ensure column order
+    cols = ["宫位", "天干", "地支", "星", "神", "门"]
+    df = df[cols]
+    # print as markdown
+    print(df.to_markdown(index=False))
 
 def main(argv: Sequence[str] | None = None) -> None:
     parser = build_parser()
