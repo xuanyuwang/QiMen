@@ -107,6 +107,7 @@ def get_zhi_fu(pan: Pan) -> None:
     xing = gong.ZhuDiXing
 
     target_gong = pan.DiPan.value[pan.ShiZhu.value.get_gan()]
+    pan.JiuXing.value[xing] = target_gong
     pan.TianPan.value[dun] = target_gong
     pan.BaShen.value["值符"] = target_gong
 
