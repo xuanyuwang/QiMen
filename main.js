@@ -83,8 +83,8 @@ function main() {
   pan.arrangeJiuXing();
   pan.arrangeBaShen();
   pan.arrangeTianPan();
-  // pan.arrangeBaMen();
-  // pan.jiGong();
+  pan.arrangeBaMen();
+  pan.jiGong();
 
   console.log(`\n阴阳: ${pan.YinYang}`);
   console.log(`元: ${pan.Yuan}`);

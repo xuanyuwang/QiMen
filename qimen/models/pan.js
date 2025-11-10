@@ -493,34 +493,26 @@ export class Pan {
    * Maps door names to Gongs based on a complex calculation involving DiZhi
    */
   arrangeBaMen() {
-    if (!this.XunShou || !this.YinYang || !this.ShiZhu || !this.ZhiShiMen ||
-        Object.keys(this.DiPan).length === 0) {
-      throw new Error('XunShou, YinYang, ShiZhu, ZhiShiMen, and DiPan must be set before arranging BaMen');
+    const allDiGanSet = this.Gongs.every(gong => gong.DiGan && gong.DiGan.length > 0);
+    if (!this.XunShou || !this.YinYang || !this.ShiZhu || !this.ZhiShiMen || !allDiGanSet) {
+      throw new Error('XunShou, YinYang, ShiZhu, ZhiShiMen, and DiGan must be set before arranging BaMen');
     }
 
     // Get the dun gan and its gong from DiPan
     const xunShou = this.XunShou.toString();
     const dun = JiaZi.LiuShiJiaZi[xunShou][JiaZi.Dun];
-    const dunGong = this.DiPan[dun];
+    const dunGong = this.Gongs.find(g => g.DiGan.includes(dun));
 
     // Operation: increment for Yang, decrement for Yin
     const op = this.YinYang === YinYang.Yang ? (x => x + 1) : (x => x - 1);
 
-    // List of 12 DiZhi in order
-    const diZhiList = [
-      DiZhi.Zi, DiZhi.Chou, DiZhi.Yin, DiZhi.Mao,
-      DiZhi.Chen, DiZhi.Si, DiZhi.Wu, DiZhi.Wei,
-      DiZhi.Shen, DiZhi.You, DiZhi.Xu, DiZhi.Hai
-    ];
-
     // Helper to get next dizhi
-    const nextDiZhi = (x) => diZhiList[(diZhiList.indexOf(x) + 1) % 12];
+    const nextDiZhi = (x) => DiZhi.AllDiZhi[(DiZhi.AllDiZhi.indexOf(x) + 1) % 12];
 
     // Helper to get next gong number (skip center palace #5)
     const nextGongNum = (currentGongNum) => {
       let next = (op(currentGongNum - 1) % 8) + 1;
-      // If next is 5 (center), skip it
-      return next === 5 ? nextGongNum(next) : next;
+      return next
     };
 
     // Build DiZhi -> Gong number mapping starting from XunShou's zhi
@@ -530,7 +522,7 @@ export class Pan {
     const targetDiZhi = this.ShiZhu.zhi;
 
     // Generate mapping until we reach the target DiZhi
-    for (let i = 0; i < diZhiList.length; i++) {
+    for (let i = 0; i < DiZhi.AllDiZhi.length; i++) {
       if (targetDiZhi in diZhiMap) {
         break;
       }
@@ -548,38 +540,35 @@ export class Pan {
     // Start with ZhiShiMen at the gong corresponding to ShiZhu's zhi
     let startMen = this.ZhiShiMen;
     let startGong = this.Gongs[diZhiMap[targetDiZhi] - 1];
-    this.BaMen = { [startMen]: startGong };
+    startGong.FeiMen = startMen;
 
     // Arrange remaining doors clockwise
     for (let i = 0; i < baMen.length - 1; i++) {
       startMen = nextMen(startMen);
       startGong = NextGong(startGong, ClockwiseGongOrder);
-      this.BaMen[startMen] = startGong;
+      this._getGongByName(startGong.Name).FeiMen = startMen;
     }
   }
 
   /**
    * JiGong (寄宫) - handles the center palace "residing" logic
-   * When center palace (中五宫) appears in DiPan, it "resides" in palace #2 (坤二宫)
+   * TODO: 中宫的天干没有寄出去
    */
   jiGong() {
-    if (Object.keys(this.DiPan).length === 0) {
-      throw new Error('DiPan must be set before calling jiGong');
+    const allTianGanSet = this.Gongs.every(gong => gong.TianGan && gong.TianGan.length > 0);
+    const allFeiXingSet = this.Gongs.every(gong => gong.FeiXing && gong.FeiXing.length > 0);
+    if (!allTianGanSet || !allFeiXingSet) {
+      throw new Error('TianGan must be set before calling jiGong');
     }
 
-    // Find which TianGan maps to center palace in DiPan
-    let diPanTianGan = null;
-    for (const [tianGan, gong] of Object.entries(this.DiPan)) {
-      if (gong.Name === "中五宫") {
-        diPanTianGan = tianGan;
-        break;
-      }
-    }
+    const centerGong = this.Gongs.find(gong => gong.Number === 5);
+    const tianRuiGong = this.Gongs.find(gong => gong.FeiXing.includes(JiuXing.TianRui));
+    
+    tianRuiGong.TianGan.push(centerGong.DiGan[0]);
+    tianRuiGong.FeiXing.push(centerGong.FeiXing[0]);
 
-    // If found, remap it to palace #2 (坤二宫) - using existing Gongs[1]
-    if (diPanTianGan) {
-      this.DiPan[diPanTianGan] = this.Gongs[1];  // Gongs[1] is KunGong (palace #2)
-    }
+    centerGong.TianGan = [];
+    centerGong.FeiXing = [];
   }
 
   /**

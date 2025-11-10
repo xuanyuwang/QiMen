@@ -18,3 +18,5 @@ export const Shen = "申";  // Monkey, 9th branch
 export const You = "酉";   // Rooster, 10th branch
 export const Xu = "戌";    // Dog, 11th branch
 export const Hai = "亥";   // Pig, 12th branch
+
+export const AllDiZhi = [Zi, Chou, Yin, Mao, Chen, Si, Wu, Wei, Shen, You, Xu, Hai];
