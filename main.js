@@ -64,24 +64,27 @@ function main() {
   const pan = new Pan();
   pan.calculateShiChen(solarTime);
   pan.calculateJieQi(solarTime);
+  pan.calculateYinYang();
   pan.calculateNianZhu(solarTime);
   pan.calculateYueZhu(solarTime);
   pan.calculateRiZhu(solarTime);
   pan.calculateShiZhu(solarTime);
 
-  // Calculate derived fields (YinYang is auto-derived from JieQi)
+  // Calculate derived fields
   pan.calculateYuan();
   pan.calculateJuShu();
-  pan.arrangeDiPan();
   pan.calculateXunShou();
   pan.calculateKongWang();
+  
+  // arrange pan
+  pan.arrangeDiPan();
   pan.calculateZhiFu();
   pan.calculateZhiShiMen();
   pan.arrangeJiuXing();
   pan.arrangeBaShen();
   pan.arrangeTianPan();
-  pan.arrangeBaMen();
-  pan.jiGong();
+  // pan.arrangeBaMen();
+  // pan.jiGong();
 
   console.log(`\n阴阳: ${pan.YinYang}`);
   console.log(`元: ${pan.Yuan}`);

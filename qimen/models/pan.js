@@ -13,8 +13,10 @@ import * as Yuan from '../data/yuan.js';
 import * as TianGan from '../data/tian_gan.js';
 import * as DiZhi from '../data/di_zhi.js';
 import * as JiaZi from '../data/jia_zi.js';
-import { ArrangeJiuXing } from '../jiu_xing.js';
-import { ArrangeBaShen } from '../ba_shen.js';
+import { ArrangeJiuXing } from './jiu_xing.js';
+import * as BaShen from '../data/ba_shen.js';
+import * as JiuXing from '../data/jiu_xing.js';
+import { ArrangeBaShen } from './ba_shen.js';
 
 /**
  * Chinese labels for Pan fields
@@ -67,18 +69,6 @@ export class Pan {
       new Gong(GenGongFixedState),    // 8
       new Gong(LiGongFixedState)      // 9
     ];
-
-    // Dictionaries populated during calculation
-    // DiPan: TianGan -> Gong mapping (ground/earth plate)
-    this.DiPan = {};
-    // TianPan: TianGan -> Gong mapping (heaven plate)
-    this.TianPan = {};
-    // JiuXing: Star name -> Gong mapping
-    this.JiuXing = {};
-    // BaShen: Spirit name -> Gong mapping
-    this.BaShen = {};
-    // BaMen: Door name -> Gong mapping
-    this.BaMen = {};
   }
 
   // Getters and setters with validation
@@ -100,11 +90,13 @@ export class Pan {
       throw new Error(`Invalid JieQi: ${value}`);
     }
     this._jieQi = value;
-
-    // Automatically derive YinYang from JieQi
-    if (value !== null) {
-      this._yinYang = JieQi.GetJieQiYinYang(value);
+  }
+  
+  calculateYinYang() {
+    if (!this.JieQi) {
+      throw new Error('JieQi must be set before calculating YinYang');
     }
+    this._yinYang = JieQi.GetJieQiYinYang(this.JieQi);
   }
 
   get NianZhu() { return this._nianZhu; }
@@ -338,15 +330,15 @@ export class Pan {
 
     // Map TianGan to Gongs in the fixed order (reuse existing Gongs array)
     this.DiPan = {};
-    this.DiPan[TianGan.Wu] = this.Gongs[generatedNums[0] - 1];
-    this.DiPan[TianGan.Ji] = this.Gongs[generatedNums[1] - 1];
-    this.DiPan[TianGan.Geng] = this.Gongs[generatedNums[2] - 1];
-    this.DiPan[TianGan.Xin] = this.Gongs[generatedNums[3] - 1];
-    this.DiPan[TianGan.Ren] = this.Gongs[generatedNums[4] - 1];
-    this.DiPan[TianGan.Gui] = this.Gongs[generatedNums[5] - 1];
-    this.DiPan[TianGan.Ding] = this.Gongs[generatedNums[6] - 1];
-    this.DiPan[TianGan.Bing] = this.Gongs[generatedNums[7] - 1];
-    this.DiPan[TianGan.Yi] = this.Gongs[generatedNums[8] - 1];
+    this.getGongByNumber(generatedNums[0]).DiGan = [TianGan.Wu];
+    this.getGongByNumber(generatedNums[1]).DiGan = [TianGan.Ji];
+    this.getGongByNumber(generatedNums[2]).DiGan = [TianGan.Geng];
+    this.getGongByNumber(generatedNums[3]).DiGan = [TianGan.Xin];
+    this.getGongByNumber(generatedNums[4]).DiGan = [TianGan.Ren];
+    this.getGongByNumber(generatedNums[5]).DiGan = [TianGan.Gui];
+    this.getGongByNumber(generatedNums[6]).DiGan = [TianGan.Ding];
+    this.getGongByNumber(generatedNums[7]).DiGan = [TianGan.Bing];
+    this.getGongByNumber(generatedNums[8]).DiGan = [TianGan.Yi];
   }
 
   /**
@@ -354,27 +346,29 @@ export class Pan {
    * Sets the first entry in JiuXing, TianPan, and BaShen
    */
   calculateZhiFu() {
-    if (!this.XunShou || !this.ShiZhu || Object.keys(this.DiPan).length === 0) {
-      throw new Error('XunShou, ShiZhu, and DiPan must be set before calculating ZhiFu');
+    // Check if all Gongs have DiGan set
+    const allDiGanSet = this.Gongs.every(gong => gong.DiGan && gong.DiGan.length > 0);
+    if (!this.XunShou || !this.ShiZhu || !allDiGanSet) {
+      throw new Error('XunShou, ShiZhu, and DiGan for all Gongs must be set before calculating ZhiFu');
     }
 
     // Get the hidden gan (遁) for XunShou
     const xunShou = this.XunShou.toString();
     const dun = JiaZi.LiuShiJiaZi[xunShou][JiaZi.Dun];
 
-    // Get the gong where the hidden gan is located in DiPan
-    const gong = this.DiPan[dun];
+    // Get the gong where the hidden gan is located in DiGan
+    const gong = this.Gongs.find(g => g.DiGan.includes(dun));
 
     // Get the fixed star (ZhuDiXing) of that gong
     const xing = gong.ZhuDiXing;
 
-    // Get the target gong from DiPan using ShiZhu's gan
-    const targetGong = this.DiPan[this.ShiZhu.getGan()];
+    // Get the target gong from DiGan using ShiZhu's gan
+    const targetGong = this.Gongs.find(g => g.DiGan.includes(this.ShiZhu.getGan()));
 
     // Set the first entry in JiuXing, TianPan, and BaShen
-    this.JiuXing[xing] = targetGong;
-    this.TianPan[dun] = targetGong;
-    this.BaShen["值符"] = targetGong;
+    targetGong.FeiXing = [xing];
+    targetGong.TianGan = [dun];
+    targetGong.FeiShen = BaShen.ZhiFu
   }
 
   /**
@@ -382,7 +376,8 @@ export class Pan {
    * Finds the door based on ShiZhu's group in LiuShiJiaZi
    */
   calculateZhiShiMen() {
-    if (!this.ShiZhu || Object.keys(this.DiPan).length === 0) {
+    const allDiGanSet = this.Gongs.every(gong => gong.DiGan && gong.DiGan.length > 0);
+    if (!this.ShiZhu || !allDiGanSet) {
       throw new Error('ShiZhu and DiPan must be set before calculating ZhiShiMen');
     }
 
@@ -402,7 +397,7 @@ export class Pan {
     }
 
     // Get the gong from DiPan and extract its ZhuDiMen
-    const gong = this.DiPan[diPanGan];
+    const gong = this.Gongs.find(g => g.DiGan.includes(diPanGan));
     this.ZhiShiMen = gong.ZhuDiMen;
   }
 
@@ -429,21 +424,23 @@ export class Pan {
    * Arranges all nine stars based on the first star set by calculateZhiFu
    */
   arrangeJiuXing() {
-    if (Object.keys(this.JiuXing).length === 0) {
+    const someFeiXingSet = this.Gongs.some(gong => gong.FeiXing && gong.FeiXing.length > 0);
+    if (!someFeiXingSet) {
       throw new Error('JiuXing must have at least one entry before arranging (call calculateZhiFu first)');
     }
 
     // Get the first star and its gong
-    const firstXing = Object.keys(this.JiuXing)[0];
-    const firstGong = this.JiuXing[firstXing].Name;
+    const firstGong = this.Gongs.find(gong => gong.FeiXing.length > 0);
+    const firstXing = firstGong.FeiXing[0];
 
     // Arrange all stars
-    const arrangedJiuXing = ArrangeJiuXing(firstXing, firstGong);
+    const arrangedJiuXing = ArrangeJiuXing(firstXing, firstGong.Name);
 
     // Update JiuXing with all arranged stars
-    for (const [xing, gongName] of Object.entries(arrangedJiuXing)) {
-      this.JiuXing[xing] = this._getGongByName(gongName);
+    for (const [gongName, xing] of Object.entries(arrangedJiuXing)) {
+      this._getGongByName(gongName).FeiXing = [xing];
     }
+    this._getGongByName(ZhongGongFixedState.Name).FeiXing = [JiuXing.TianQin];
   }
 
   /**
@@ -451,20 +448,21 @@ export class Pan {
    * Arranges all eight spirits based on the first spirit set by calculateZhiFu
    */
   arrangeBaShen() {
-    if (!this.YinYang || Object.keys(this.BaShen).length === 0) {
+    const someFeiShenSet = this.Gongs.some(gong => gong.FeiShen && gong.FeiShen.length > 0);
+    if (!this.YinYang || !someFeiShenSet) {
       throw new Error('YinYang and BaShen must be set before arranging (call calculateZhiFu first)');
     }
 
     // Get the first spirit and its gong
-    const firstBaShen = Object.keys(this.BaShen)[0];
-    const firstGong = this.BaShen[firstBaShen].Name;
+    const firstGong = this.Gongs.find(gong => gong.FeiShen && gong.FeiShen.length > 0);
+    const firstBaShen = firstGong.FeiShen;
 
     // Arrange all spirits (requires YinYang)
-    const arrangedBaShen = ArrangeBaShen(firstBaShen, firstGong, this.YinYang);
+    const arrangedBaShen = ArrangeBaShen(firstBaShen, firstGong.Name, this.YinYang);
 
     // Update BaShen with all arranged spirits
-    for (const [bashen, gongName] of Object.entries(arrangedBaShen)) {
-      this.BaShen[bashen] = this._getGongByName(gongName);
+    for (const [gongName, baShen] of Object.entries(arrangedBaShen)) {
+      this._getGongByName(gongName).FeiShen = baShen;
     }
   }
 
@@ -473,26 +471,20 @@ export class Pan {
    * Maps TianGan to Gongs based on how stars have moved from their original positions
    */
   arrangeTianPan() {
-    if (Object.keys(this.JiuXing).length === 0 || Object.keys(this.DiPan).length === 0) {
-      throw new Error('JiuXing and DiPan must be set before arranging TianPan');
-    }
-
-    // Create reverse map: DiPan gong name -> tian gan
-    const diPanGongToTianGan = {};
-    for (const [tianGan, gong] of Object.entries(this.DiPan)) {
-      diPanGongToTianGan[gong.Name] = tianGan;
+    const allFeiXingSet = this.Gongs.every(gong => gong.FeiXing && gong.FeiXing.length > 0);
+    const allDiGanSet = this.Gongs.every(gong => gong.DiGan && gong.DiGan.length > 0);
+    if (!allFeiXingSet || !allDiGanSet) {
+      throw new Error('JiuXing and DiGan must be set before arranging TianPan');
     }
 
     // For each star, find its original gong and map the corresponding tian gan to its current gong
-    for (const [xing, currentGong] of Object.entries(this.JiuXing)) {
+    for (const gong of this.Gongs) {
+      const xing = gong.FeiXing[0];
       // Get the original/fixed gong for this star
       const originalGong = this._getGongByZhuDiXing(xing);
 
-      // Find which tian gan in DiPan corresponds to the original gong
-      const tianGan = diPanGongToTianGan[originalGong.Name];
-
       // Map that tian gan in TianPan to the star's current gong
-      this.TianPan[tianGan] = currentGong;
+      gong.TianGan = [originalGong.DiGan[0]];
     }
   }
 
@@ -614,11 +606,11 @@ export class Pan {
     lines.push(`\n${FIELD_LABELS.Gongs}:`);
     for (const gong of this.Gongs) {
       const tianGan = gong.TianGan.join(', ') || '无';
-      const diZhi = gong.DiZhi.join(', ') || '无';
+      const diGan = gong.DiGan.join(', ') || '无';
       const feiXing = gong.FeiXing.join(', ') || '无';
       lines.push(`  ${gong.Name}:`);
       lines.push(`    天干: ${tianGan}`);
-      lines.push(`    地支: ${diZhi}`);
+      lines.push(`    地干: ${diGan}`);
       lines.push(`    星: ${feiXing}`);
       lines.push(`    神: ${gong.FeiShen || '无'}`);
       lines.push(`    门: ${gong.FeiMen || '无'}`);

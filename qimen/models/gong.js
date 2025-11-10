@@ -107,7 +107,7 @@ export class Gong {
     
     // Mutable state (changes with timestamp)
     this.TianGan = [];
-    this.DiZhi = [];
+    this.DiGan = [];
     this.FeiXing = [];
     this.FeiShen = "";
     this.FeiMen = "";

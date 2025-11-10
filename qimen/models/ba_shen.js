@@ -2,8 +2,8 @@
  * Ba Shen (八神) - Eight Spirits arrangement logic
  */
 
-import * as BaShen from './data/ba_shen.js';
-import * as YinYang from './data/yin_yang.js';
+import * as BaShen from '../data/ba_shen.js';
+import * as YinYang from '../data/yin_yang.js';
 
 const BaShenOrder = [
   BaShen.ZhiFu,
@@ -67,7 +67,7 @@ export function ArrangeBaShen(startBaShen, startGong, yinYang) {
   let currentGong = startGong;
   
   for (let i = 0; i < 8; i++) {
-    arranged[currentBaShen] = currentGong;
+    arranged[currentGong] = currentBaShen;
     currentBaShen = nextBaShen(currentBaShen);
     currentGong = nextGong(currentGong, yinYang);
   }

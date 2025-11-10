@@ -2,7 +2,7 @@
  * Jiu Xing (九星) - Nine Stars arrangement logic
  */
 
-import * as JiuXing from './data/jiu_xing.js';
+import * as JiuXing from '../data/jiu_xing.js';
 
 const JiuXingOrder = [
   JiuXing.TianPeng,
@@ -62,13 +62,10 @@ export function ArrangeJiuXing(startXing, startGong) {
   let currentGong = startGong;
   
   for (let i = 0; i < 9; i++) {
-    arranged[currentXing] = currentGong;
+    arranged[currentGong] = currentXing;
     currentXing = nextJiuXing(currentXing);
     currentGong = nextGong(currentGong);
   }
-  
-  // TianQin always follows TianRui
-  arranged[JiuXing.TianQin] = arranged[JiuXing.TianRui];
   
   return arranged;
 }
