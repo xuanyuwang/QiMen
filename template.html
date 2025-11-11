@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>奇门遁甲 - QiMen DunJia Chart</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header .timestamp {
+      font-size: 1.2em;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .controls input,
+    .controls select,
+    .controls button {
+      padding: 10px 15px;
+      font-size: 1em;
+      border: 2px solid white;
+      border-radius: 5px;
+    }
+
+    .controls input[type="datetime-local"] {
+      background: white;
+      color: #333;
+    }
+
+    .controls select {
+      background: white;
+      color: #333;
+    }
+
+    .controls button {
+      background: white;
+      color: #667eea;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .controls button:hover:not(:disabled) {
+      background: #f8f9fa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .error {
+      color: #dc3545;
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error:not(:empty) {
+      display: block;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 1.8em;
+      color: #667eea;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #667eea;
+    }
+
+    /* Basic fields styling */
+    .basic-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 10px;
+    }
+
+    .field-row {
+      padding: 10px 15px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+
+    .field-row:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .field-label {
+      font-weight: bold;
+      color: #667eea;
+      margin-right: 10px;
+    }
+
+    .field-value {
+      color: #333;
+    }
+
+    /* Gong grid styling */
+    .gong-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .gong-row-container {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .gong {
+      flex: 1;
+      min-width: 250px;
+      max-width: 350px;
+      border: 2px solid #667eea;
+      border-radius: 10px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+    }
+
+    .gong:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      border-color: #764ba2;
+    }
+
+    .gong-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px;
+      font-size: 1.3em;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .gong-content {
+      padding: 15px;
+    }
+
+    .gong-row {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95em;
+    }
+
+    .gong-row:last-child {
+      border-bottom: none;
+    }
+
+    .gong-row .label {
+      font-weight: bold;
+      color: #667eea;
+      display: inline-block;
+      min-width: 50px;
+    }
+
+    /* Center palace styling */
+    .gong[data-number="5"] {
+      border-color: #ff6b6b;
+    }
+
+    .gong[data-number="5"] .gong-header {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    }
+
+    .gong[data-number="5"] .gong-row .label {
+      color: #ff6b6b;
+    }
+
+    /* Responsive design */
+    @media (max-width: 1024px) {
+      .gong {
+        min-width: 200px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2em;
+      }
+
+      .gong-grid {
+        gap: 8px;
+      }
+
+      .gong-row-container {
+        gap: 8px;
+      }
+
+      .gong {
+        min-width: 150px;
+      }
+
+      .gong-header {
+        font-size: 1.1em;
+        padding: 10px;
+      }
+
+      .gong-content {
+        padding: 10px;
+      }
+
+      .basic-fields {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .content {
+        padding: 15px;
+      }
+
+      .gong {
+        min-width: 100px;
+        font-size: 0.85em;
+      }
+
+      .gong-header {
+        font-size: 0.95em;
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>奇门遁甲</h1>
+      <div class="timestamp" id="timestamp"></div>
+      <div class="controls">
+        <input type="datetime-local" id="datetimeInput" />
+        <select id="timezoneSelect">
+          <option value="Asia/Shanghai">Asia/Shanghai</option>
+          <option value="Asia/Hong_Kong">Asia/Hong_Kong</option>
+          <option value="Asia/Tokyo">Asia/Tokyo</option>
+          <option value="America/New_York">America/New_York</option>
+          <option value="America/Los_Angeles">America/Los_Angeles</option>
+          <option value="Europe/London">Europe/London</option>
+          <option value="UTC">UTC</option>
+        </select>
+        <button onclick="handleCalculate()">计算 (Calculate)</button>
+        <button id="copyButton" onclick="copyToClipboard()" disabled>复制文本 (Copy Text)</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="error" class="error"></div>
+
+      <div class="section">
+        <h2 class="section-title">基本信息 (Basic Information)</h2>
+        <div id="basicFields"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">九宫 (Nine Palaces)</h2>
+        <div id="gongGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function handleCalculate() {
+      const datetimeInput = document.getElementById('datetimeInput').value;
+      const timezone = document.getElementById('timezoneSelect').value;
+
+      if (!datetimeInput) {
+        document.getElementById('error').textContent = '请选择日期时间 (Please select a date and time)';
+        return;
+      }
+
+      // Convert datetime-local value to Date object
+      const datetime = new Date(datetimeInput);
+      window.calculatePan(datetime, timezone);
+    }
+  </script>
+
+  <!-- BUNDLE_PLACEHOLDER -->
+</body>
+</html>

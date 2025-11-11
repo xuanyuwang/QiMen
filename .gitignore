@@ -29,6 +29,7 @@ coverage/
 dist/
 build/
 *.log
+qimen.html
 
 # Optional npm cache directory
 .npm

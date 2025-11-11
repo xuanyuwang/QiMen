@@ -11,7 +11,8 @@
     "start": "node main.js",
     "test": "node --test tests/*.test.js",
     "test:datetime": "node --test tests/datetime.test.js",
-    "example": "node main.js --moment 2024-03-20T09:15:00 --timezone Asia/Shanghai"
+    "example": "node main.js --moment 2024-03-20T09:15:00 --timezone Asia/Shanghai",
+    "build": "node build.js"
   },
   "keywords": [
     "qimen",
@@ -25,5 +26,8 @@
   },
   "dependencies": {
     "tyme4ts": "^1.3.9"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0"
   }
 }
