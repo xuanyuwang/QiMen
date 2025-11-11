@@ -43,7 +43,7 @@ async function build() {
     );
 
     // Step 4: Write final HTML file
-    const outputPath = join(__dirname, 'qimen.html');
+    const outputPath = join(__dirname, 'index.html');
     writeFileSync(outputPath, finalHTML);
     console.log(`4. Standalone HTML created: ${outputPath}`);
     console.log(`   Total file size: ${(finalHTML.length / 1024).toFixed(2)} KB`);
