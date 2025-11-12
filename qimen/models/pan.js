@@ -357,13 +357,19 @@ export class Pan {
     const dun = JiaZi.LiuShiJiaZi[xunShou][JiaZi.Dun];
 
     // Get the gong where the hidden gan is located in DiGan
-    const gong = this.Gongs.find(g => g.DiGan.includes(dun));
+    let gong = this.Gongs.find(g => g.DiGan.includes(dun));
+    if (gong.Name === ZhongGongFixedState.Name) {
+      gong = this.Gongs.find((g) => g.Name === KunGongFixedState.Name);      
+    }
 
     // Get the fixed star (ZhuDiXing) of that gong
     const xing = gong.ZhuDiXing;
 
     // Get the target gong from DiGan using ShiZhu's gan
-    const targetGong = this.Gongs.find(g => g.DiGan.includes(this.ShiZhu.getGan()));
+    let targetGong = this.Gongs.find(g => g.DiGan.includes(this.ShiZhu.getGan()));
+    if (targetGong.Name === ZhongGongFixedState.Name) {
+      targetGong = this.Gongs.find((g) => g.Name === KunGongFixedState.Name);      
+    }
 
     // Set the first entry in JiuXing, TianPan, and BaShen
     targetGong.FeiXing = [xing];
@@ -386,6 +392,10 @@ export class Pan {
 
     // Search through LiuShiJiaZi to find which group contains ShiZhu
     for (const key in JiaZi.LiuShiJiaZi) {
+      if (shiZhu === key) {
+        diPanGan = JiaZi.LiuShiJiaZi[key][JiaZi.Dun];
+        break;
+      }
       const jiaZiData = JiaZi.LiuShiJiaZi[key];
 
       if (jiaZiData[Yuan.ShangYuan]?.includes(shiZhu) ||
@@ -397,7 +407,10 @@ export class Pan {
     }
 
     // Get the gong from DiPan and extract its ZhuDiMen
-    const gong = this.Gongs.find(g => g.DiGan.includes(diPanGan));
+    let gong = this.Gongs.find(g => g.DiGan.includes(diPanGan));
+    if (gong.Name === ZhongGongFixedState.Name) {
+      gong = this.Gongs.find((g) => g.Name === KunGongFixedState.Name);      
+    }
     this.ZhiShiMen = gong.ZhuDiMen;
   }
 
@@ -543,6 +556,9 @@ export class Pan {
     // Start with ZhiShiMen at the gong corresponding to ShiZhu's zhi
     let startMen = this.ZhiShiMen;
     let startGong = this.Gongs[diZhiMap[targetDiZhi] - 1];
+    if (startGong.Name === ZhongGongFixedState.Name) {
+      startGong = this.Gongs.find((g) => g.Name === KunGongFixedState.Name);      
+    }
     startGong.FeiMen = startMen;
 
     // Arrange remaining doors clockwise

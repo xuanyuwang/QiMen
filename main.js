@@ -79,10 +79,10 @@ function main() {
   // arrange pan
   pan.arrangeDiPan();
   pan.calculateZhiFu();
-  pan.calculateZhiShiMen();
   pan.arrangeJiuXing();
   pan.arrangeBaShen();
   pan.arrangeTianPan();
+  pan.calculateZhiShiMen();
   pan.arrangeBaMen();
   pan.jiGong();
 
