@@ -509,9 +509,12 @@ export class Pan {
     // Helper to get next dizhi
     const nextDiZhi = (x) => DiZhi.AllDiZhi[(DiZhi.AllDiZhi.indexOf(x) + 1) % 12];
 
-    // Helper to get next gong number (skip center palace #5)
+    // Helper to get next gong number
     const nextGongNum = (currentGongNum) => {
-      let next = (op(currentGongNum - 1) % 8) + 1;
+      let next = op(currentGongNum);
+      if (next === 0) {
+        next = 9;
+      }
       return next
     };
 

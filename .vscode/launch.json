@@ -4,39 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        // Python test cases
-        {
-            "name": "Python: test case",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "main.py",
-            "console": "integratedTerminal",
-            "args": "--moment 2008-11-04T12:30:00"
-        },
-        {
-            "name": "Python: test case 2",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "main.py",
-            "console": "integratedTerminal",
-            "args": "--moment 1998-09-26T11:20:00"
-        },
-        {
-            "name": "Python: test case 伏吟局",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "main.py",
-            "console": "integratedTerminal",
-            "args": "--moment 2025-11-05T21:43:00"
-        },
-        {
-            "name": "Python: test case 变局",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "main.py",
-            "console": "integratedTerminal",
-            "args": "--moment 2025-11-05T23:30:00"
-        },
         // JavaScript test cases (same inputs)
         {
             "name": "JS: test case",
