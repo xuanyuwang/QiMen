@@ -616,12 +616,13 @@ export class Pan {
       const tianGan = gong.TianGan.join(', ') || '无';
       const diGan = gong.DiGan.join(', ') || '无';
       const feiXing = gong.FeiXing.join(', ') || '无';
-      lines.push(`  ${gong.Name}:`);
-      lines.push(`    天干: ${tianGan}`);
-      lines.push(`    地干: ${diGan}`);
-      lines.push(`    星: ${feiXing}`);
-      lines.push(`    神: ${gong.FeiShen || '无'}`);
-      lines.push(`    门: ${gong.FeiMen || '无'}`);
+      const feiShen = gong.FeiShen || '无';
+      const feiMen = gong.FeiMen || '无';
+
+      // Keep each Gong's details on a single line for compact output
+      lines.push(
+        `  ${gong.Name}: 天干: ${tianGan}, 地干: ${diGan}, 星: ${feiXing}, 神: ${feiShen}, 门: ${feiMen}`
+      );
     }
 
     return lines.join('\n');
