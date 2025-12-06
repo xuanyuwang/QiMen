@@ -149,6 +149,9 @@ function calculatePan(datetimeStr, timezone) {
     const minute = String(observation.minute).padStart(2, '0');
     const timestampStr = `${year}-${month}-${day}T${hour}:${minute}`;
 
+    // Store timestamp on pan for toString()
+    pan.Timestamp = timestampStr;
+
     document.getElementById('timestamp').textContent = timestampStr;
 
     // Display basic fields

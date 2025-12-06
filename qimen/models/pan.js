@@ -22,6 +22,7 @@ import { ArrangeBaShen } from './ba_shen.js';
  * Chinese labels for Pan fields
  */
 const FIELD_LABELS = Object.freeze({
+  Timestamp: "公历",
   ShiChen: "时辰",
   JieQi: "节气",
   NianZhu: "年柱",
@@ -43,6 +44,7 @@ const FIELD_LABELS = Object.freeze({
 export class Pan {
   constructor() {
     // Private fields to store values
+    this._timestamp = null;
     this._shiChen = null;
     this._jieQi = null;
     this._nianZhu = new Zhu("", "");
@@ -72,6 +74,9 @@ export class Pan {
   }
 
   // Getters and setters with validation
+  get Timestamp() { return this._timestamp; }
+  set Timestamp(value) { this._timestamp = value; }
+
   get ShiChen() { return this._shiChen; }
   set ShiChen(value) { this._shiChen = value; }
 
@@ -599,6 +604,7 @@ export class Pan {
 
     // Basic fields
     const basicFields = [
+      'Timestamp',
       'ShiChen', 'JieQi', 'NianZhu', 'YueZhu', 'RiZhu', 'ShiZhu',
       'YinYang', 'KongWang', 'Yuan', 'XunShou', 'JuShu', 'ZhiShiMen'
     ];
