@@ -529,11 +529,8 @@ export class Pan {
 
     // Helper to get next gong number
     const nextGongNum = (currentGongNum) => {
-      let next = op(currentGongNum);
-      if (next === 0) {
-        next = 9;
-      }
-      return next
+      const next = op(currentGongNum);
+      return ((next - 1 + 9) % 9) + 1;  
     };
 
     // Build DiZhi -> Gong number mapping starting from XunShou's zhi
